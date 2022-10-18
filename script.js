@@ -9,6 +9,7 @@ const section1 = document.getElementById("section--1");
 const tab = document.querySelectorAll(".operations__tab");
 const tabsContainer = document.querySelector(".operations__tab-container");
 const tabContent = document.querySelectorAll(".operations__content");
+const nav = document.querySelector(".nav");
 
 // Modal window
 
@@ -63,6 +64,25 @@ tabsContainer.addEventListener("click", function (e) {
     .querySelector(`.operations__content--${clicked.dataset.tab}`)
     .classList.add("operations__content--active");
 });
+
+// Nav fade out animation
+
+const hoverHandler = function (e) {
+  const link = e.target;
+  if (link.classList.contains("nav__link")) {
+    const sibilings = link.closest(".nav").querySelectorAll(".nav__link");
+    const logo = link.closest(".nav").querySelector("img");
+
+    sibilings.forEach((l) => {
+      if (l !== link) l.style.opacity = this;
+    });
+    logo.style.opacity = this;
+  }
+};
+
+nav.addEventListener("mouseover", hoverHandler.bind(0.5));
+
+nav.addEventListener("mouseout", hoverHandler.bind(1));
 
 // Cookie Message
 
