@@ -10,6 +10,7 @@ const tab = document.querySelectorAll(".operations__tab");
 const tabsContainer = document.querySelector(".operations__tab-container");
 const tabContent = document.querySelectorAll(".operations__content");
 const nav = document.querySelector(".nav");
+const header = document.querySelector(".header");
 
 // Modal window
 
@@ -45,6 +46,7 @@ document.querySelector(".nav__links").addEventListener("click", function (e) {
 
   if (e.target.classList.contains("nav__link")) {
     const id = e.target.getAttribute("href");
+    if (id === "#") return;
     document.querySelector(id).scrollIntoView({ behavior: "smooth" });
   }
 });
@@ -83,6 +85,46 @@ const hoverHandler = function (e) {
 nav.addEventListener("mouseover", hoverHandler.bind(0.5));
 
 nav.addEventListener("mouseout", hoverHandler.bind(1));
+
+// Sticky nav
+
+const navHeight = nav.getBoundingClientRect().height;
+const obsCallback = function (entries, obs) {
+  const [entry] = entries;
+  if (!entry.isIntersecting) nav.classList.add("sticky");
+  else nav.classList.remove("sticky");
+};
+
+const headerObserver = new IntersectionObserver(obsCallback, {
+  root: null,
+  threshold: 0,
+  rootMargin: `-${navHeight}px`,
+});
+headerObserver.observe(header);
+
+// Reveal sections
+
+const allSections = document.querySelectorAll(".section");
+
+const revealSection = function (entries, observer) {
+  const [entry] = entries;
+  console.log(entry);
+
+  if (!entry.isIntersecting) return;
+
+  entry.target.classList.remove("section--hidden");
+  observer.unobserve(entry.target);
+};
+
+const sectionObs = new IntersectionObserver(revealSection, {
+  root: null,
+  threshold: 0.15,
+});
+
+allSections.forEach((section) => {
+  sectionObs.observe(section);
+  section.classList.add("section--hidden");
+});
 
 // Cookie Message
 
