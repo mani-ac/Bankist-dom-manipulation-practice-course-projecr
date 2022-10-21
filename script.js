@@ -11,6 +11,8 @@ const tabsContainer = document.querySelector(".operations__tab-container");
 const tabContent = document.querySelectorAll(".operations__content");
 const nav = document.querySelector(".nav");
 const header = document.querySelector(".header");
+const allSections = document.querySelectorAll(".section");
+const imgTargets = document.querySelectorAll("img[data-src]");
 
 // Modal window
 
@@ -104,11 +106,8 @@ headerObserver.observe(header);
 
 // Reveal sections
 
-const allSections = document.querySelectorAll(".section");
-
 const revealSection = function (entries, observer) {
   const [entry] = entries;
-  console.log(entry);
 
   if (!entry.isIntersecting) return;
 
@@ -126,23 +125,102 @@ allSections.forEach((section) => {
   section.classList.add("section--hidden");
 });
 
-// Cookie Message
+// Lazy loading images
 
-/*
-const message = document.createElement("div");
-message.classList.add("cookie-message");
+const lazyLoad = function (entries, observer) {
+  const [entry] = entries;
 
-message.innerHTML = `We use cookie for improved functionality and analytics. <button class='btn btn--close--cookie'>Got it!</button>`;
+  if (!entry.isIntersecting) return;
 
-const header = document.querySelector(".header");
-header.append(message);
+  entry.target.src = entry.target.dataset.src;
 
-message.style.height =
-  Number.parseFloat(getComputedStyle(message).height, 10) + 40 + "px";
-
-document
-  .querySelector(".btn--close--cookie")
-  .addEventListener("click", function () {
-    message.remove();
+  entry.target.addEventListener("load", function (e) {
+    e.target.classList.remove("lazy-img");
   });
-*/
+
+  observer.unobserve(entry.target);
+};
+
+const imgObs = new IntersectionObserver(lazyLoad, {
+  root: null,
+  threshold: 0,
+  rootMargin: "0px 0px 200px 0px",
+});
+
+imgTargets.forEach((img) => imgObs.observe(img));
+
+// Slider
+
+const slider = function () {
+  const slides = document.querySelectorAll(".slide");
+  const btnRight = document.querySelector(".slider__btn--right");
+  const btnLeft = document.querySelector(".slider__btn--left");
+  const dotContainer = document.querySelector(".dots");
+  let currSlide = 0,
+    maxSlide = slides.length - 1;
+
+  const createDots = function () {
+    slides.forEach((_, i) => {
+      dotContainer.insertAdjacentHTML(
+        "beforeend",
+        `<button class="dots__dot" data-slide="${i}"></button>`
+      );
+    });
+  };
+
+  const activateDot = function (slide) {
+    document
+      .querySelectorAll(".dots__dot")
+      .forEach((dot) => dot.classList.remove("dots__dot--active"));
+
+    document
+      .querySelector(`.dots__dot[data-slide="${slide}"]`)
+      .classList.add("dots__dot--active");
+  };
+
+  const goToSlide = function (slide) {
+    slides.forEach((s, i) => {
+      s.style.transform = `translateX(${100 * (i - slide)}%)`;
+    });
+  };
+
+  const nextSlide = function () {
+    if (currSlide === maxSlide) currSlide = 0;
+    else currSlide++;
+
+    goToSlide(currSlide);
+    activateDot(currSlide);
+  };
+
+  const prevSlide = function () {
+    if (currSlide === 0) currSlide = maxSlide;
+    else currSlide--;
+
+    goToSlide(currSlide);
+    activateDot(currSlide);
+  };
+
+  const init = function () {
+    goToSlide(0);
+    createDots();
+    activateDot(0);
+  };
+  init();
+
+  btnRight.addEventListener("click", nextSlide);
+  btnLeft.addEventListener("click", prevSlide);
+
+  document.addEventListener("keydown", function (e) {
+    e.key === "ArrowRight" && nextSlide();
+    e.key === "ArrowLeft" && prevSlide();
+  });
+
+  dotContainer.addEventListener("click", function (e) {
+    if (e.target.classList.contains("dots__dot")) {
+      const { slide } = e.target.dataset;
+      goToSlide(slide);
+      activateDot(slide);
+    }
+  });
+};
+slider();
